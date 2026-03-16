@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Servidor de Base de Datos
+  mysql-db:
+    image: mysql:8.0
+    container_name: neobank-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: neobank
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # API Spring Boot
+  neobank-api:
+    build: .
+    container_name: neobank-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/neobank?serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+volumes:
+  mysql_data:

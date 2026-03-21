@@ -1,9 +1,7 @@
 version: '3.8'
 
 services:
-  # ==========================================
-  # 1. INFRAESTRUCTURA BASE
-  # ==========================================
+  # BASE
   mysql-db:
     image: mysql:8.0
     container_name: neobank-mysql
@@ -24,18 +22,15 @@ services:
       - "8080:8080"
     depends_on:
       - mysql-db
-      - kafka # Le decimos que espere a que Kafka exista
+      - kafka
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/neobank?serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      # Preparando el terreno: Le diremos a Spring Boot dónde vive Kafka en la red de Docker
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-
-  # ==========================================
-  # 2. EL SISTEMA NERVIOSO (Apache Kafka)
-  # ==========================================
+      -
+  # Apache Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper-neobank

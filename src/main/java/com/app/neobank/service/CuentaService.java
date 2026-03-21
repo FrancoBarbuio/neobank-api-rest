@@ -26,10 +26,8 @@ public class CuentaService {
     private final CuentaRepository cuentaRepository;
     private final ClienteRepository clienteRepository;
 
-    // 1. Agregamos la variable del Productor
     private final TransferenciaProducer transferenciaProducer;
 
-    // 2. Lo agregamos al constructor para que Spring lo inyecte
     public CuentaService(CuentaRepository cuentaRepository,
                          ClienteRepository clienteRepository,
                          TransferenciaProducer transferenciaProducer) {

@@ -16,7 +16,6 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    // 1. La Fábrica: Le decimos dónde está Kafka y que traduzca nuestros objetos a JSON
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -24,32 +23,28 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
-        // 👇 AQUÍ ESTÁ LA MAGIA: Usamos el nuevo JacksonJsonSerializer
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }
-    // 🔥 ESTE ES EL QUE TE FALTA
+
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
-    // CONFIGURACIÓN DEL CONSUMIDOR
-    // 3. La Fábrica del Consumidor: Le decimos que escuche como texto puro (String)
+
     @Bean
     public org.springframework.kafka.core.ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "neobank-group");
 
-        // La clave y el valor se leen como texto plano inofensivo
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
 
         return new org.springframework.kafka.core.DefaultKafkaConsumerFactory<>(props);
     }
 
-    // 4. El Escuchador: El motor que se queda corriendo en segundo plano esperando mensajes
     @Bean
     public org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory<String, String> factory =

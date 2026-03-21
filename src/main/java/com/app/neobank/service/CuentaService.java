@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.app.neobank.event.TransferenciaEvent;
+import com.app.neobank.service.TransferenciaProducer;
 
 @Service
 public class CuentaService {
@@ -24,9 +26,16 @@ public class CuentaService {
     private final CuentaRepository cuentaRepository;
     private final ClienteRepository clienteRepository;
 
-    public CuentaService(CuentaRepository cuentaRepository, ClienteRepository clienteRepository) {
+    // 1. Agregamos la variable del Productor
+    private final TransferenciaProducer transferenciaProducer;
+
+    // 2. Lo agregamos al constructor para que Spring lo inyecte
+    public CuentaService(CuentaRepository cuentaRepository,
+                         ClienteRepository clienteRepository,
+                         TransferenciaProducer transferenciaProducer) {
         this.cuentaRepository = cuentaRepository;
         this.clienteRepository = clienteRepository;
+        this.transferenciaProducer = transferenciaProducer;
     }
 
     public Page<Cuenta> obtenerTodasLasCuentas(int page, int size) {
@@ -69,6 +78,14 @@ public class CuentaService {
         cuentaRepository.save(destino);
 
         log.info("Transferencia exitosa completada.");
+
+        // DISPARO A KAFKA
+        TransferenciaEvent eventoKafka = new TransferenciaEvent(
+                origen.getNumeroCuenta(),
+                destino.getNumeroCuenta(),
+                dto.monto()
+        );
+        transferenciaProducer.publicarEventoDeTransferencia(eventoKafka);
 
         return new TransaccionResponseDTO(
                 null, java.time.LocalDateTime.now(), "TRANSFERENCIA",
@@ -126,4 +143,5 @@ public class CuentaService {
         log.info("Retiro exitoso. Nuevo saldo: ${}", cuentaActualizada.getSaldo());
         return cuentaActualizada;
     }
+
 }

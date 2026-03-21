@@ -5,6 +5,7 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![Spring Security](https://img.shields.io/badge/Spring_Security_&_JWT-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache_Kafka-Streaming-black?style=for-the-badge&logo=apachekafka&logoColor=white)
 
 NeoBank es una API RESTful de grado de producción diseñada para simular el núcleo transaccional (Core Banking) de una institución financiera. Construida con los estándares modernos de la industria, esta API garantiza la integridad de los datos, seguridad sin estado (Stateless) y facilidad de despliegue.
 
@@ -16,6 +17,9 @@ NeoBank es una API RESTful de grado de producción diseñada para simular el nú
 * **Manejo de Errores Global:** Implementación de `@RestControllerAdvice` para capturar excepciones de negocio y validación (`@Valid`), devolviendo respuestas JSON estandarizadas y limpias (Códigos 400, 403, 409).
 * **Contenerización:** Entorno completamente dockerizado usando `Dockerfile` multi-etapa y `docker-compose` para levantar la API y la base de datos con un solo comando.
 * **Documentación Interactiva:** Integración con Swagger/OpenAPI 3.0 para pruebas directas desde el navegador.
+* **Arquitectura Orientada a Eventos (EDA):** Integración con **Apache Kafka** para el procesamiento asincrónico.
+* **Productor:** Emite eventos inmutables (`TransferenciaEvent`) al concretar operaciones financieras.
+* **Consumidor:** Escucha tópicos específicos para reaccionar a los eventos en segundo plano (ej. notificaciones), logrando un desacoplamiento total y alta resiliencia.
 
 ## 🏗️ Arquitectura y Patrones
 

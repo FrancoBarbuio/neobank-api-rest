@@ -1,7 +1,9 @@
 version: '3.8'
 
 services:
-  # Servidor de Base de Datos
+  # ==========================================
+  # 1. INFRAESTRUCTURA BASE
+  # ==========================================
   mysql-db:
     image: mysql:8.0
     container_name: neobank-mysql
@@ -14,7 +16,6 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  # API Spring Boot
   neobank-api:
     build: .
     container_name: neobank-app
@@ -23,11 +24,49 @@ services:
       - "8080:8080"
     depends_on:
       - mysql-db
+      - kafka # Le decimos que espere a que Kafka exista
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/neobank?serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      # Preparando el terreno: Le diremos a Spring Boot dónde vive Kafka en la red de Docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+
+  # ==========================================
+  # 2. EL SISTEMA NERVIOSO (Apache Kafka)
+  # ==========================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper-neobank
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-neobank
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:4.0.1
+    container_name: kafdrop-neobank
+    depends_on:
+      - kafka
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
 
 volumes:
   mysql_data:
